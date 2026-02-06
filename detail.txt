@@ -1,0 +1,86 @@
+================================================================================
+PROJECT: PLACEMENT ELIGIBILITY CHECKER PORTAL
+TYPE: Production-Grade Full-Stack Application
+STACK: React.js (Frontend) | Node.js + Express (Backend) | MySQL 8.0 (Database)
+================================================================================
+
+1. SYSTEM ARCHITECTURE & DESIGN PHILOSOPHY
+--------------------------------------------------------------------------------
+The system is built on a "Single Source of Truth" principle using a normalized 
+MySQL database. It avoids hardcoded business logic in favor of data-driven 
+decisions (e.g., Eligibility Criteria are rows in a table, not `if` statements).
+
+KEY MODULES:
+
+A. AUTHENTICATION & RBAC (Role-Based Access Control)
+   - Users are strictly categorized: STUDENT, PLACEMENT_STAFF, ADMIN.
+   - Security is handled via stateless JWT (JSON Web Tokens).
+   - Middleware (`authMiddleware.js`) intercepts requests to enforce roles.
+
+B. DYNAMIC ELIGIBILITY ENGINE
+   - Jobs have linked criteria (`eligibility_criteria` table).
+   - When a student views jobs, a SQL query compares their profile (`students` table)
+     against the job criteria (CGPA, Semester, Department).
+   - This ensures 100% accuracy and prevents ineligible applications at the DB level.
+
+C. RESUME AUDIT SYSTEM (The Core Differentiator)
+   - Students can have multiple resumes.
+   - Every upload creates a new VERSION (`resume_versions` table).
+   - Applications link to a SPECIFIC version ID.
+   - LOGIC: If a student edits a resume *after* applying, the `resumeService` 
+     detects the active application and sets `resume_updated_after_apply = TRUE`.
+   - Staff Dashboard highlights these flagged applications for review.
+
+================================================================================
+2. CURRENT IMPLEMENTATION STATUS
+================================================================================
+[COMPLETED] Database Schema (`schema.sql`) - Fully normalized.
+[COMPLETED] Database Config (`db.js`) - Connection pooling set up.
+[COMPLETED] Auth Middleware - Token verification and Role checks.
+[COMPLETED] Resume Logic (`resumeService.js`) - Versioning and Audit flagging.
+[COMPLETED] Application Logic (`jobController.js`) - Eligibility checks and Apply.
+
+================================================================================
+3. EXECUTION ROADMAP (STEPS TO COMPLETE)
+================================================================================
+
+PHASE 1: BACKEND COMPLETION (WIRING)
+-------------------------------------------------------
+1. Auth Controller:
+   - Implement `register` (Create User + Student/Staff profile in transaction).
+   - Implement `login` (Verify password hash, issue JWT).
+2. API Routes:
+   - `routes/authRoutes.js`: /login, /register
+   - `routes/studentRoutes.js`: /profile, /resume/upload, /jobs/eligible
+   - `routes/staffRoutes.js`: /jobs/create, /applications/audit
+3. Server Entry Point:
+   - Create `server.js` to load middlewares and mount routes.
+
+PHASE 2: STAFF MODULE IMPLEMENTATION
+-------------------------------------------------------
+1. Job Creation API:
+   - Endpoint to insert into `companies`, `job_roles`, and `eligibility_criteria`.
+2. Audit Dashboard API:
+   - SQL Query to fetch applications where `resume_updated_after_apply = TRUE`.
+
+PHASE 3: FRONTEND FOUNDATION
+-------------------------------------------------------
+1. Setup React:
+   - Install dependencies (axios, react-router-dom, jwt-decode).
+2. Auth Context:
+   - Manage global user state (IsLoggedIn, Role).
+3. Axios Interceptor:
+   - Automatically attach JWT token to every request header.
+
+PHASE 4: UI IMPLEMENTATION
+-------------------------------------------------------
+1. Student Dashboard:
+   - "Eligible Jobs" Card View.
+   - Resume Manager (Upload button + Version history list).
+2. Staff Dashboard:
+   - "Post Job" Form (Inputs for CGPA, Dept, etc.).
+   - "Application Review" Table (Rows with Red Flags for edited resumes).
+
+PHASE 5: INTEGRATION & TESTING
+-------------------------------------------------------
+- Verify the "Audit Loop": Apply -> Edit Resume -> Check if Flag appears for Staff.

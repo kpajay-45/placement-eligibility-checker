@@ -1,0 +1,94 @@
+Method: POST
+URL: http://localhost:5000/api/auth/register
+Body:
+json
+ Show full code block 
+{
+  "email": "staff@admin.com",
+  "password": "password123",
+  "role": "PLACEMENT_STAFF",
+  "profile": {
+    "name": "Placement Officer",
+    "designation": "Coordinator"
+  }
+}
+-------------------------------------------------------------------------------
+2. Step 1: Login as Staff
+Method: POST
+URL: http://localhost:5000/api/auth/login
+Body:
+json
+{
+  "email": "staff@admin.com",
+  "password": "password123"
+}
+Action: Copy the token from the response.
+
+-----------------------------------------------------------------------
+
+3. Step 2: Create a Job (With Specific Criteria)
+Method: POST
+URL: http://localhost:5000/api/staff/jobs/create
+Headers: Authorization: Bearer <PASTE_STAFF_TOKEN_HERE>
+Body: (Note the criteria: CGPA 7.0, Sem 6, CSE/IT)
+json
+ Show full code block 
+{
+  "company": {
+    "name": "Google",
+    "industry": "Tech"
+  },
+  "job": {
+    "title": "Software Engineer",
+    "description": "Backend Role",
+    "deadline": "2025-12-31"
+  },
+  "criteria": {
+    "min_cgpa": 7.0,
+    "min_semester": 6,
+    "departments": "CSE,IT"
+  }
+}
+
+-----------------------------------------------------------------------------------
+
+4. Prerequisite: Register a Student (Who IS Eligible)
+You need a student who meets the criteria above (CGPA > 7.0, Dept = CSE).
+
+Method: POST
+URL: http://localhost:5000/api/auth/register
+Body:
+json
+ Show full code block 
+{
+  "email": "student@test.com",
+  "password": "password123",
+  "role": "STUDENT",
+  "profile": {
+    "register_number": "REG101",
+    "full_name": "John Doe",
+    "department": "CSE",
+    "semester": 7,
+    "cgpa": 8.5
+  }
+}
+
+----------------------------------------------------------------------
+
+5. Step 3: Login as Student
+Method: POST
+URL: http://localhost:5000/api/auth/login
+Body:
+json
+{
+  "email": "student@test.com",
+  "password": "password123"
+}
+Action: Copy the token from the response.
+
+--------------------------------------------------------------------------
+
+6. Step 4: Check Eligible Jobs
+Method: GET
+URL: http://localhost:5000/api/student/jobs/eligible
+Headers: Authorization: Bearer <PASTE_STUDENT_TOKEN_HERE>
