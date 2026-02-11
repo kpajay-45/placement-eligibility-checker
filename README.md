@@ -28,6 +28,7 @@ Applicants are automatically ranked using a weighted algorithm calculated direct
 ### 4. Role-Based Dashboards
 - **Student:** View Profile, Upload Resume, View Eligible Jobs, Apply.
 - **Staff:** Post Jobs, Audit Applications, Shortlist Candidates.
+- **Admin:** Approve or Deactivate Placement Staff accounts.
 
 ## Setup Instructions
 
@@ -68,6 +69,11 @@ Applicants are automatically ranked using a weighted algorithm calculated direct
 2. **Shortlist**: Go to "Shortlist & Rank" -> Select Job -> View ranked students -> Click Shortlist.
 3. **Audit**: Go to "Audit Applications" to see if any applicant has tampered with their resume after applying.
 
+### Admin Workflow
+1. **Login**: Login as an Admin user.
+2. **Manage Staff**: View list of registered Placement Staff. Click "Approve" to activate their account or "Deactivate" to revoke access.
+3. **Access Control**: Users with `INACTIVE` status (e.g., unapproved staff) will be blocked from logging in.
+
 ### Testing the "Audit Loop"
 To verify the integrity feature:
 1. Login as **Student** and apply for a job.
@@ -79,6 +85,7 @@ To verify the integrity feature:
 - `POST /api/auth/register`: Register new user.
 - `POST /api/staff/jobs/create`: Create job with criteria.
 - `GET /api/student/jobs/eligible`: Fetch jobs matching student profile.
+- `GET /api/admin/staff`: List all placement staff.
 - `GET /api/staff/jobs/:jobId/applicants`: Get ranked applicants.
 
 ################# first content ###########

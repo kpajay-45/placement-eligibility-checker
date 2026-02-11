@@ -84,3 +84,206 @@ PHASE 4: UI IMPLEMENTATION
 PHASE 5: INTEGRATION & TESTING
 -------------------------------------------------------
 - Verify the "Audit Loop": Apply -> Edit Resume -> Check if Flag appears for Staff.
+
+
+
+=================================Extra===================
+3. Suggestions to Improve the Project
+If you want to turn this into a final year project or a production app, here are the recommended upgrades:
+
+Real File Storage (Cloudinary/S3):
+
+Current: You are simulating uploads with a fake URL string.
+Upgrade: Integrate multer and cloudinary. When a student uploads a resume, actually save the PDF file to the cloud and store the real URL. This allows Staff to download and view the resume.
+Activity Points Management UI:
+
+Current: We inserted activity points via SQL queries to test ranking.
+Upgrade: Add a "My Activities" tab in the Student Dashboard to upload certificates. Add a "Verify Activities" tab in the Staff Dashboard to approve them.
+UI Framework:
+
+Current: You are using basic inline CSS.
+Upgrade: Install Tailwind CSS or Material UI. It will make your tables, forms, and dashboards look professional and mobile-responsive instantly.
+Forgot Password Flow:
+
+Current: No way to recover accounts.
+Upgrade: Add a "Forgot Password" link on login that sends a reset token via email (you already have Nodemailer set up, so this is easy!).
+
+
+-- 1. Add personal_email to students table
+ALTER TABLE students ADD COLUMN personal_email VARCHAR(255);
+
+-- 2. Make profile fields nullable (since they are removed from Registration)
+ALTER TABLE students MODIFY COLUMN register_number VARCHAR(50) NULL;
+ALTER TABLE students MODIFY COLUMN full_name VARCHAR(100) NULL;
+ALTER TABLE students MODIFY COLUMN department VARCHAR(50) NULL;
+ALTER TABLE students MODIFY COLUMN semester INT NULL;
+ALTER TABLE students MODIFY COLUMN cgpa DECIMAL(4,2) NULL;
+
+-- 3. (Optional) Ensure placement_staff name is nullable if not collected
+ALTER TABLE placement_staff MODIFY COLUMN name VARCHAR(100) NULL;
+
+
+
+
+================================================================
+CREATE TABLE `activity_points` (
+   `activity_id` int NOT NULL AUTO_INCREMENT,
+   `student_id` int NOT NULL,
+   `activity_type` varchar(100) NOT NULL,
+   `points` int NOT NULL,
+   `verified` tinyint(1) DEFAULT '0',
+   `verified_by` int DEFAULT NULL,
+   `verified_at` timestamp NULL DEFAULT NULL,
+   PRIMARY KEY (`activity_id`),
+   KEY `student_id` (`student_id`),
+   KEY `verified_by` (`verified_by`),
+   CONSTRAINT `activity_points_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `students` (`student_id`) ON DELETE CASCADE,
+   CONSTRAINT `activity_points_ibfk_2` FOREIGN KEY (`verified_by`) REFERENCES `placement_staff` (`staff_id`)
+ ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+
+ CREATE TABLE `applications` (
+   `application_id` int NOT NULL AUTO_INCREMENT,
+   `student_id` int NOT NULL,
+   `job_role_id` int NOT NULL,
+   `resume_id` int NOT NULL,
+   `applied_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+   `status` enum('APPLIED','SHORTLISTED','REJECTED','OFFERED') DEFAULT 'APPLIED',
+   `resume_updated_after_apply` tinyint(1) DEFAULT '0',
+   PRIMARY KEY (`application_id`),
+   UNIQUE KEY `student_id` (`student_id`,`job_role_id`),
+   KEY `job_role_id` (`job_role_id`),
+   KEY `resume_id` (`resume_id`),
+   CONSTRAINT `applications_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `students` (`student_id`) ON DELETE CASCADE,
+   CONSTRAINT `applications_ibfk_2` FOREIGN KEY (`job_role_id`) REFERENCES `job_roles` (`job_role_id`) ON DELETE CASCADE,
+   CONSTRAINT `applications_ibfk_3` FOREIGN KEY (`resume_id`) REFERENCES `resumes` (`resume_id`)
+ ) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+
+ CREATE TABLE `companies` (
+   `company_id` int NOT NULL AUTO_INCREMENT,
+   `company_name` varchar(100) NOT NULL,
+   `industry` varchar(50) DEFAULT NULL,
+   `description` text,
+   `visiting_date` date DEFAULT NULL,
+   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+   PRIMARY KEY (`company_id`)
+ ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+
+ CREATE TABLE `eligibility_criteria` (
+   `criteria_id` int NOT NULL AUTO_INCREMENT,
+   `job_role_id` int NOT NULL,
+   `min_cgpa` decimal(4,2) DEFAULT '0.00',
+   `min_semester` int DEFAULT '1',
+   `eligible_departments` text,
+   `min_activity_points` int DEFAULT '0',
+   `max_backlogs` int DEFAULT '0',
+   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+   PRIMARY KEY (`criteria_id`),
+   KEY `job_role_id` (`job_role_id`),
+   CONSTRAINT `eligibility_criteria_ibfk_1` FOREIGN KEY (`job_role_id`) REFERENCES `job_roles` (`job_role_id`) ON DELETE CASCADE
+ ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+
+ CREATE TABLE `eligibility_results` (
+   `result_id` int NOT NULL AUTO_INCREMENT,
+   `application_id` int NOT NULL,
+   `is_eligible` tinyint(1) NOT NULL,
+   `remarks` varchar(255) DEFAULT NULL,
+   `evaluated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+   PRIMARY KEY (`result_id`),
+   KEY `application_id` (`application_id`),
+   CONSTRAINT `eligibility_results_ibfk_1` FOREIGN KEY (`application_id`) REFERENCES `applications` (`application_id`) ON DELETE CASCADE
+ ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+
+ CREATE TABLE `job_roles` (
+   `job_role_id` int NOT NULL AUTO_INCREMENT,
+   `company_id` int NOT NULL,
+   `role_title` varchar(100) NOT NULL,
+   `job_description` text,
+   `location` varchar(50) DEFAULT NULL,
+   `salary_package` varchar(20) DEFAULT NULL,
+   `application_deadline` timestamp NULL DEFAULT NULL,
+   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+   PRIMARY KEY (`job_role_id`),
+   KEY `company_id` (`company_id`),
+   CONSTRAINT `job_roles_ibfk_1` FOREIGN KEY (`company_id`) REFERENCES `companies` (`company_id`) ON DELETE CASCADE
+ ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+
+ CREATE TABLE `placement_staff` (
+   `staff_id` int NOT NULL AUTO_INCREMENT,
+   `user_id` int NOT NULL,
+   `name` varchar(100) DEFAULT NULL,
+   `designation` varchar(50) DEFAULT NULL,
+   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+   PRIMARY KEY (`staff_id`),
+   UNIQUE KEY `user_id` (`user_id`),
+   CONSTRAINT `placement_staff_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
+ ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+
+CREATE TABLE `resume_versions` (
+   `version_id` int NOT NULL AUTO_INCREMENT,
+   `resume_id` int NOT NULL,
+   `version_number` int NOT NULL,
+   `resume_url` varchar(255) NOT NULL,
+   `edited_by` enum('STUDENT','PLACEMENT_STAFF') NOT NULL,
+   `edited_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+   PRIMARY KEY (`version_id`),
+   KEY `resume_id` (`resume_id`),
+   CONSTRAINT `resume_versions_ibfk_1` FOREIGN KEY (`resume_id`) REFERENCES `resumes` (`resume_id`) ON DELETE CASCADE
+ ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+
+ CREATE TABLE `resumes` (
+   `resume_id` int NOT NULL AUTO_INCREMENT,
+   `student_id` int NOT NULL,
+   `resume_title` varchar(100) DEFAULT NULL,
+   `is_active` tinyint(1) DEFAULT '1',
+   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+   PRIMARY KEY (`resume_id`),
+   KEY `student_id` (`student_id`),
+   CONSTRAINT `resumes_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `students` (`student_id`) ON DELETE CASCADE
+ ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+
+ CREATE TABLE `skills` (
+   `skill_id` int NOT NULL AUTO_INCREMENT,
+   `skill_name` varchar(50) NOT NULL,
+   PRIMARY KEY (`skill_id`),
+   UNIQUE KEY `skill_name` (`skill_name`)
+ ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+
+
+CREATE TABLE `student_skills` (
+   `student_id` int NOT NULL,
+   `skill_id` int NOT NULL,
+   `proficiency_level` enum('BEGINNER','INTERMEDIATE','ADVANCED') DEFAULT 'INTERMEDIATE',
+   PRIMARY KEY (`student_id`,`skill_id`),
+   KEY `skill_id` (`skill_id`),
+   CONSTRAINT `student_skills_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `students` (`student_id`) ON DELETE CASCADE,
+   CONSTRAINT `student_skills_ibfk_2` FOREIGN KEY (`skill_id`) REFERENCES `skills` (`skill_id`) ON DELETE CASCADE
+ ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+
+
+CREATE TABLE `students` (
+   `student_id` int NOT NULL AUTO_INCREMENT,
+   `user_id` int NOT NULL,
+   `register_number` varchar(20) NOT NULL,
+   `full_name` varchar(100) NOT NULL,
+   `department` varchar(50) NOT NULL,
+   `semester` int NOT NULL,
+   `cgpa` decimal(4,2) NOT NULL,
+   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+   `personal_email` varchar(255) DEFAULT NULL,
+   PRIMARY KEY (`student_id`),
+   UNIQUE KEY `user_id` (`user_id`),
+   UNIQUE KEY `register_number` (`register_number`),
+   CONSTRAINT `students_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
+ ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+
+
+CREATE TABLE `users` (
+   `user_id` int NOT NULL AUTO_INCREMENT,
+   `email` varchar(255) NOT NULL,
+   `password_hash` varchar(255) NOT NULL,
+   `role` enum('STUDENT','PLACEMENT_STAFF','ADMIN') NOT NULL,
+   `status` enum('ACTIVE','INACTIVE') DEFAULT 'ACTIVE',
+   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+   PRIMARY KEY (`user_id`),
+   UNIQUE KEY `email` (`email`)
+ ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci

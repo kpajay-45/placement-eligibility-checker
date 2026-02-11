@@ -9,6 +9,11 @@ exports.register = async (req, res) => {
 
     const { email, password, role, profile } = req.body;
 
+    // SECURITY: Prevent public registration of Admin accounts
+    if (role === 'ADMIN') {
+      return res.status(403).json({ message: 'Admin registration is restricted.' });
+    }
+
     // 1. Check if user exists
     const [existing] = await connection.query('SELECT user_id FROM users WHERE email = ?', [email]);
     if (existing.length > 0) {
@@ -19,26 +24,28 @@ exports.register = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(password, salt);
 
-    // 3. Insert into Users Table
+    // 3. Determine Status (Staff must be approved by Admin)
+    const status = role === 'PLACEMENT_STAFF' ? 'INACTIVE' : 'ACTIVE';
+
+    // 4. Insert into Users Table
     const [userResult] = await connection.query(
-      'INSERT INTO users (email, password_hash, role) VALUES (?, ?, ?)',
-      [email, passwordHash, role]
+      'INSERT INTO users (email, password_hash, role, status) VALUES (?, ?, ?, ?)',
+      [email, passwordHash, role, status]
     );
     const userId = userResult.insertId;
 
     // 4. Insert into Profile Table based on Role
     if (role === 'STUDENT') {
-      const { register_number, full_name, department, semester, cgpa } = profile;
+      // Registration is now minimal. Profile details are updated later in Dashboard.
       await connection.query(
-        `INSERT INTO students (user_id, register_number, full_name, department, semester, cgpa) 
-         VALUES (?, ?, ?, ?, ?, ?)`,
-        [userId, register_number, full_name, department, semester, cgpa]
+        'INSERT INTO students (user_id) VALUES (?)',
+        [userId]
       );
     } else if (role === 'PLACEMENT_STAFF') {
-      const { name, designation } = profile;
+      const { designation } = profile;
       await connection.query(
-        'INSERT INTO placement_staff (user_id, name, designation) VALUES (?, ?, ?)',
-        [userId, name, designation]
+        'INSERT INTO placement_staff (user_id, designation) VALUES (?, ?)',
+        [userId, designation]
       );
     }
 
@@ -62,6 +69,11 @@ exports.login = async (req, res) => {
     if (users.length === 0) return res.status(401).json({ message: 'Invalid credentials' });
 
     const user = users[0];
+
+    if (user.status !== 'ACTIVE') {
+      return res.status(403).json({ message: 'Account is inactive. Please contact Admin.' });
+    }
+
     const isMatch = await bcrypt.compare(password, user.password_hash);
     if (!isMatch) return res.status(401).json({ message: 'Invalid credentials' });
 
