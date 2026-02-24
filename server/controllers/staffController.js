@@ -1,5 +1,6 @@
 const db = require('../config/db');
 const nodemailer = require('nodemailer');
+const shortlistService = require('../services/shortlistService');
 
 // Configure Email Transporter (Use environment variables in production)
 const transporter = nodemailer.createTransport({
@@ -18,7 +19,7 @@ exports.createJob = async (req, res) => {
 
     // 1. Create Company (Simplified: Always creates new for now)
     const [resComp] = await connection.query(
-      'INSERT INTO companies (company_name, industry, logo_url) VALUES (?, ?, ?)', 
+      'INSERT INTO companies (company_name, industry, logo_url) VALUES (?, ?, ?)',
       [company.name, company.industry, company.logo_url]
     );
     const companyId = resComp.insertId;
@@ -84,6 +85,9 @@ exports.getJobApplicants = async (req, res) => {
       SELECT 
         a.application_id,
         a.status,
+        a.is_eligible,
+        a.is_overridden,
+        a.override_reason,
         s.full_name,
         s.register_number,
         s.cgpa,
@@ -114,10 +118,10 @@ exports.getJobApplicants = async (req, res) => {
 exports.updateApplicationStatus = async (req, res) => {
   try {
     const { applicationId, status } = req.body; // status: 'SHORTLISTED', 'REJECTED'
-    
+
     // 1. Update Status
     await db.query('UPDATE applications SET status = ? WHERE application_id = ?', [status, applicationId]);
-    
+
     // 2. Fetch Details for Email Notification
     if (status === 'SHORTLISTED') {
       const query = `
@@ -130,10 +134,10 @@ exports.updateApplicationStatus = async (req, res) => {
         WHERE a.application_id = ?
       `;
       const [rows] = await db.query(query, [applicationId]);
-      
+
       if (rows.length > 0) {
         const { email, full_name, role_title, company_name } = rows[0];
-        
+
         // Send Email (Fire and forget - don't await to keep UI fast)
         transporter.sendMail({
           from: process.env.EMAIL_USER,
@@ -145,6 +149,49 @@ exports.updateApplicationStatus = async (req, res) => {
     }
 
     res.json({ message: `Application ${status.toLowerCase()} successfully` });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.generateShortlist = async (req, res) => {
+  try {
+    const { jobId } = req.body;
+    // Assuming the user ID in the token corresponds to a Staff ID. 
+    // In a real app we might need a lookup, but let's assume req.user.user_id maps to staff_id via a table lookup or similar.
+    // For now, let's look up staff_id from user_id
+    const [staff] = await db.query('SELECT staff_id FROM placement_staff WHERE user_id = ?', [req.user.user_id]);
+    if (staff.length === 0) return res.status(403).json({ message: 'Not authorized as Staff' });
+
+    const result = await shortlistService.generateShortlist(jobId, staff[0].staff_id);
+    res.json({ message: 'Shortlist generated successfully', ...result });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.getShortlists = async (req, res) => {
+  try {
+    const { jobId } = req.params;
+    const shortlists = await shortlistService.getShortlistsForJob(jobId);
+    res.json(shortlists);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.overrideEligibility = async (req, res) => {
+  try {
+    const { applicationId, overrideReason } = req.body;
+    if (!overrideReason) return res.status(400).json({ message: 'Reason is required' });
+
+    await db.query(
+      'UPDATE applications SET is_overridden = TRUE, override_reason = ?, is_eligible = TRUE WHERE application_id = ?',
+      [overrideReason, applicationId]
+    );
+
+    res.json({ message: 'Eligibility successfully overridden.' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
