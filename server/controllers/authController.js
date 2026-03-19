@@ -9,6 +9,14 @@ exports.register = async (req, res) => {
 
     const { email, password, role, profile } = req.body;
 
+    // VALIDATION: Required fields
+    if (!email || !password || !role) {
+      return res.status(400).json({ message: 'Email, password, and role are required.' });
+    }
+    if (password.length < 6) {
+      return res.status(400).json({ message: 'Password must be at least 6 characters long.' });
+    }
+
     // SECURITY: Prevent public registration of Admin accounts
     if (role === 'ADMIN') {
       return res.status(403).json({ message: 'Admin registration is restricted.' });
@@ -86,5 +94,33 @@ exports.login = async (req, res) => {
     res.json({ token, role: user.role });
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// POST /auth/change-password — Authenticated route, all roles
+// ─────────────────────────────────────────────────────────────────────────────
+exports.changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ message: 'Current and new password are required.' });
+    }
+    if (newPassword.length < 6) {
+      return res.status(400).json({ message: 'New password must be at least 6 characters.' });
+    }
+
+    const [users] = await db.query('SELECT password_hash FROM users WHERE user_id = ?', [req.user.user_id]);
+    if (users.length === 0) return res.status(404).json({ message: 'User not found.' });
+
+    const isMatch = await bcrypt.compare(currentPassword, users[0].password_hash);
+    if (!isMatch) return res.status(400).json({ message: 'Current password is incorrect.' });
+
+    const newHash = await bcrypt.hash(newPassword, 10);
+    await db.query('UPDATE users SET password_hash = ? WHERE user_id = ?', [newHash, req.user.user_id]);
+
+    res.json({ message: 'Password changed successfully.' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
