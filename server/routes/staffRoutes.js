@@ -7,6 +7,7 @@ const { verifyToken, authorizeRole } = require('../middlewares/authMiddleware');
 router.use(verifyToken, authorizeRole(['PLACEMENT_STAFF']));
 
 router.get('/profile', staffController.getProfile);
+router.get('/stats', staffController.getStaffStats);
 router.post('/jobs/create', staffController.createJob);
 router.get('/applications/audit', staffController.getAuditApplications);
 router.get('/jobs/list', staffController.getPostedJobs);
@@ -15,5 +16,10 @@ router.post('/applications/status', staffController.updateApplicationStatus);
 router.post('/jobs/shortlist', staffController.generateShortlist);
 router.get('/jobs/:jobId/shortlists', staffController.getShortlists);
 router.post('/applications/override', staffController.overrideEligibility);
+
+// Job edit / delete
+router.get('/jobs/:jobId/details', staffController.getJobDetails);
+router.put('/jobs/:jobId', staffController.editJob);
+router.delete('/jobs/:jobId', staffController.deleteJob);
 
 module.exports = router;
