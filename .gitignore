@@ -13,10 +13,25 @@ client/.env
 # React Build Output
 client/build/
 client/dist/
+client/node_modules/
+client/build/
 
 # Server Build Output
 server/build/
 server/dist/
+server/data_check_output.txt
+server/schema_output.txt
+server/full_schema.txt
+
+#temp
+server/tmp_schema.js
+server/check_query.js
+server/db_search.js
+check_table.js
+list_tables.js
+run_migration.js
+detail.txt
+postman-testing.txt
 
 # Logs
 npm-debug.log*

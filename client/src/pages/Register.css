@@ -1,0 +1,53 @@
+.register-container {
+  max-width: 500px;
+  margin: 50px auto;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-family: Arial, sans-serif;
+}
+.register-title {
+  text-align: center;
+  color: #333;
+}
+.role-selection {
+  margin-bottom: 20px;
+  text-align: center;
+}
+.role-label {
+  margin-right: 15px;
+  cursor: pointer;
+}
+.role-label-last {
+  cursor: pointer;
+}
+.register-input {
+  display: block;
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 10px;
+  box-sizing: border-box;
+}
+.staff-note {
+  font-size: 12px;
+  color: #666;
+}
+.register-button {
+  width: 100%;
+  padding: 10px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 10px;
+}
+.login-link-container {
+  text-align: center;
+  margin-top: 15px;
+}
+.login-link {
+  color: #007bff;
+  text-decoration: none;
+}

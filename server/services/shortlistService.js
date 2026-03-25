@@ -30,7 +30,7 @@ const generateShortlist = async (jobRoleId, staffId) => {
         COALESCE(SUM(ap.points), 0) as total_activity_points
       FROM applications a
       JOIN students s ON a.student_id = s.student_id
-      LEFT JOIN activity_points ap ON s.student_id = ap.student_id AND ap.verified = TRUE
+      LEFT JOIN activity_points ap ON s.student_id = ap.student_id AND ap.status = 'APPROVED'
       WHERE a.job_role_id = ? 
         AND a.status = 'APPLIED'
         AND (a.is_eligible = TRUE OR a.is_overridden = TRUE)

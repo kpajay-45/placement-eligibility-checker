@@ -1,59 +1,66 @@
 const db = require('../config/db');
 
-const uploadResume = async (studentId, fileUrl, title = 'Default Resume', editedBy = 'STUDENT') => {
+/**
+ * Uploads a new resume or adds a new version to an existing one.
+ * 
+ * FIX: When resumeId is provided (edit flow), use it directly instead of
+ * matching by title — prevents versioning the wrong resume if two have the same title.
+ */
+const uploadResume = async (studentId, fileUrl, title = 'Default Resume', editedBy = 'STUDENT', resumeId = null) => {
   const connection = await db.getConnection();
   try {
     await connection.beginTransaction();
 
-    // 1. Check or Create Resume Container (Table: resumes)
-    // Schema uses 'student_id' and 'resume_title'
-    const [existingResumes] = await connection.query(
-      'SELECT resume_id FROM resumes WHERE student_id = ? AND resume_title = ?', 
-      [studentId, title]
-    );
+    let resolvedResumeId;
 
-    let resumeId;
-    if (existingResumes.length === 0) {
+    if (resumeId) {
+      // EDIT MODE: Use the explicitly provided resumeId
+      // Verify it belongs to this student
+      const [owned] = await connection.query(
+        'SELECT resume_id FROM resumes WHERE resume_id = ? AND student_id = ?',
+        [resumeId, studentId]
+      );
+      if (owned.length === 0) {
+        throw new Error('Resume not found or does not belong to this student.');
+      }
+      resolvedResumeId = resumeId;
+    } else {
+      // NEW MODE: Create a fresh resume container
       const [resResult] = await connection.query(
         'INSERT INTO resumes (student_id, resume_title, is_active) VALUES (?, ?, TRUE)',
         [studentId, title]
       );
-      resumeId = resResult.insertId;
-    } else {
-      resumeId = existingResumes[0].resume_id;
+      resolvedResumeId = resResult.insertId;
     }
 
-    // 2. Determine Version Number (Table: resume_versions)
+    // Determine next version number
     const [versions] = await connection.query(
       'SELECT MAX(version_number) as max_v FROM resume_versions WHERE resume_id = ?',
-      [resumeId]
+      [resolvedResumeId]
     );
     const nextVersion = (versions[0].max_v || 0) + 1;
 
-    // 3. Insert New Version
-    // Schema: resume_url, edited_by (ENUM), edited_at (Default CURRENT_TIMESTAMP)
+    // Insert new version
     await connection.query(
       `INSERT INTO resume_versions 
        (resume_id, version_number, resume_url, edited_by) 
        VALUES (?, ?, ?, ?)`,
-      [resumeId, nextVersion, fileUrl, editedBy]
+      [resolvedResumeId, nextVersion, fileUrl, editedBy]
     );
 
-    // 4. AUDIT LOGIC: Flag existing applications as updated
-    // Schema: applications.resume_updated_after_apply
-    // If a student updates a resume that is currently used in an active application, flag it.
+    // AUDIT LOGIC: Flag existing applications if student updates an active resume
     if (editedBy === 'STUDENT') {
       await connection.query(
         `UPDATE applications 
          SET resume_updated_after_apply = TRUE 
          WHERE resume_id = ? 
          AND status IN ('APPLIED', 'SHORTLISTED')`,
-        [resumeId]
+        [resolvedResumeId]
       );
     }
 
     await connection.commit();
-    return { resumeId, version: nextVersion };
+    return { resumeId: resolvedResumeId, version: nextVersion };
 
   } catch (error) {
     await connection.rollback();

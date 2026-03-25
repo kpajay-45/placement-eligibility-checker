@@ -19,4 +19,8 @@ router.get('/skills', studentController.getSkills);
 router.post('/skills', studentController.addSkill);
 router.delete('/skills/:skillId', studentController.deleteSkill);
 
+// Activity Points
+router.get('/activity-points', studentController.getActivityPoints);
+router.post('/activity-points', studentController.submitActivityPoint);
+
 module.exports = router;

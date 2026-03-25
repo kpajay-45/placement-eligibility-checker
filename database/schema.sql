@@ -113,9 +113,12 @@ CREATE TABLE activity_points (
     student_id INT NOT NULL,
     activity_type VARCHAR(100) NOT NULL,
     points INT NOT NULL,
-    verified BOOLEAN DEFAULT FALSE,
+    proof_url VARCHAR(500),
+    status ENUM('PENDING', 'APPROVED', 'REJECTED') DEFAULT 'PENDING',
+    rejection_reason TEXT,
     verified_by INT,
     verified_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE,
     FOREIGN KEY (verified_by) REFERENCES placement_staff(staff_id)
 );
@@ -165,11 +168,62 @@ CREATE TABLE applications (
 -- ===============================
 -- 13. ELIGIBILITY RESULTS (SNAPSHOT)
 -- ===============================
-CREATE TABLE eligibility_results (
-    result_id INT AUTO_INCREMENT PRIMARY KEY,
-    application_id INT NOT NULL,
     is_eligible BOOLEAN NOT NULL,
     remarks VARCHAR(255),
     evaluated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (application_id) REFERENCES applications(application_id) ON DELETE CASCADE
+);
+
+-- ===============================
+-- 14. SHORTLISTS (GENERATED LISTS)
+-- ===============================
+CREATE TABLE shortlists (
+    shortlist_id INT AUTO_INCREMENT PRIMARY KEY,
+    job_role_id INT NOT NULL,
+    generated_by INT NOT NULL, -- Staff ID
+    criteria_snapshot JSON, -- Store the criteria used at generation time
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (job_role_id) REFERENCES job_roles(job_role_id) ON DELETE CASCADE,
+    FOREIGN KEY (generated_by) REFERENCES placement_staff(staff_id)
+);
+
+-- ===============================
+-- 15. SHORTLIST MEMBERS
+-- ===============================
+CREATE TABLE shortlist_members (
+    shortlist_id INT NOT NULL,
+    student_id INT NOT NULL,
+    rank_score DECIMAL(10, 2),
+    PRIMARY KEY (shortlist_id, student_id),
+    FOREIGN KEY (shortlist_id) REFERENCES shortlists(shortlist_id) ON DELETE CASCADE,
+    FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE
+);
+
+-- ===============================
+-- SCHEMA UPDATES FOR SCALABILITY & FEATURES
+-- ===============================
+-- Add batch_year to students for year-over-year management
+ALTER TABLE students ADD COLUMN batch_year INT COMMENT 'Graduation Year, e.g., 2026';
+
+-- Add Override & Snapshot columns to applications
+ALTER TABLE applications 
+ADD COLUMN is_overridden BOOLEAN DEFAULT FALSE,
+ADD COLUMN override_reason VARCHAR(255),
+ADD COLUMN eligibility_snapshot JSON COMMENT 'Stores eligibility result at time of application';
+
+-- Add Academic Details
+ALTER TABLE students
+ADD COLUMN history_of_arrears INT DEFAULT 0,
+ADD COLUMN attendance_percentage DECIMAL(5,2) DEFAULT 100.00;
+
+-- ===============================
+-- STUDENT SKILLS
+-- ===============================
+CREATE TABLE IF NOT EXISTS student_skills (
+    skill_id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT NOT NULL,
+    skill_name VARCHAR(100) NOT NULL,
+    certificate_url VARCHAR(500) NULL COMMENT 'Optional: link to certificate (e.g., Google Drive)',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE
 );
