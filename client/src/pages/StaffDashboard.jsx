@@ -650,6 +650,11 @@ const ShortlistRank = () => {
       <div className="bg-white rounded-xl flex-1 overflow-hidden flex flex-col" style={{ border: '1px solid #e5e7eb' }}>
         {selectedJob ? (
           <div className="flex-1 overflow-auto">
+            {errorMsg && (
+              <div className="mx-4 mt-3 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 font-medium">
+                ⚠ {errorMsg}
+              </div>
+            )}
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="sticky top-0 z-10" style={{ background: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
                 <tr>
