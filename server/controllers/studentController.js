@@ -242,8 +242,13 @@ exports.getAppliedJobs = async (req, res) => {
        JOIN job_roles j ON a.job_role_id = j.job_role_id
        JOIN companies c ON j.company_id = c.company_id
        JOIN resumes r ON a.resume_id = r.resume_id
+       LEFT JOIN (
+           SELECT resume_id, MAX(version_number) as max_version
+           FROM resume_versions
+           GROUP BY resume_id
+       ) max_rev ON r.resume_id = max_rev.resume_id
        LEFT JOIN resume_versions rv ON rv.resume_id = r.resume_id
-         AND rv.version_number = (SELECT MAX(v2.version_number) FROM resume_versions v2 WHERE v2.resume_id = r.resume_id)
+         AND rv.version_number = max_rev.max_version
        WHERE a.student_id = (SELECT student_id FROM students WHERE user_id = ?)
        ORDER BY a.applied_at DESC`,
       [req.user.user_id]

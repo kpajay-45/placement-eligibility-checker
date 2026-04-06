@@ -103,8 +103,8 @@ exports.getAuditApplications = async (req, res) => {
       JOIN students s ON a.student_id = s.student_id
       JOIN job_roles j ON a.job_role_id = j.job_role_id
       JOIN resumes r ON a.resume_id = r.resume_id
-      JOIN resume_versions rv ON r.resume_id = rv.resume_id
-        AND rv.version_number = (SELECT MAX(version_number) FROM resume_versions WHERE resume_id = r.resume_id)
+      JOIN (SELECT resume_id, MAX(version_number) as max_version FROM resume_versions GROUP BY resume_id) max_rv ON r.resume_id = max_rv.resume_id
+      JOIN resume_versions rv ON r.resume_id = rv.resume_id AND rv.version_number = max_rv.max_version
       WHERE a.resume_updated_after_apply = TRUE
     `;
     const [apps] = await db.query(query);
@@ -156,8 +156,8 @@ exports.getJobApplicants = async (req, res) => {
       FROM applications a
       JOIN students s ON a.student_id = s.student_id
       JOIN resumes r ON a.resume_id = r.resume_id
-      JOIN resume_versions rv ON r.resume_id = rv.resume_id 
-        AND rv.version_number = (SELECT MAX(version_number) FROM resume_versions WHERE resume_id = r.resume_id)
+      JOIN (SELECT resume_id, MAX(version_number) as max_version FROM resume_versions GROUP BY resume_id) max_rv ON r.resume_id = max_rv.resume_id
+      JOIN resume_versions rv ON r.resume_id = rv.resume_id AND rv.version_number = max_rv.max_version
       LEFT JOIN activity_points ap ON s.student_id = ap.student_id AND ap.status = 'APPROVED'
       WHERE a.job_role_id = ?
       GROUP BY a.application_id, a.status, a.is_eligible, a.is_overridden, a.override_reason,
