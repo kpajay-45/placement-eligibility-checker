@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import api from '../services/api';
 import DashboardLayout from './DashboardLayout';
+import StudentProfileModal from '../components/StudentProfileModal';
 
 // --- ICONS ---
 const BriefcaseIcon = () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>;
@@ -317,6 +318,7 @@ const PostJobForm = () => {
 
 const AuditApplications = () => {
   const [auditApps, setAuditApps] = useState([]);
+  const [profileModal, setProfileModal] = useState({ open: false, studentId: null });
 
   useEffect(() => {
     const fetchAudit = async () => {
@@ -349,7 +351,13 @@ const AuditApplications = () => {
             {auditApps.map((app, index) => (
               <tr key={index} className="hover:bg-red-50">
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm font-medium text-gray-900">{app.full_name}</div>
+                  <div 
+                    className="text-sm font-medium text-indigo-600 hover:text-indigo-800 cursor-pointer hover:underline"
+                    onClick={() => setProfileModal({ open: true, studentId: app.student_id })}
+                    title="View Full Profile"
+                  >
+                    {app.full_name}
+                  </div>
                   <div className="text-sm text-gray-500">{app.register_number}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{app.role_title}</td>
@@ -371,6 +379,13 @@ const AuditApplications = () => {
           </tbody>
         </table>
       </div>
+
+      <StudentProfileModal 
+        open={profileModal.open} 
+        onClose={() => setProfileModal({ open: false, studentId: null })} 
+        studentId={profileModal.studentId} 
+        userRole="staff" 
+      />
     </div>
   );
 };
@@ -396,6 +411,7 @@ const ShortlistRank = () => {
   const [editLoading, setEditLoading] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
   const [availableDepts, setAvailableDepts] = useState([]);
+  const [profileModal, setProfileModal] = useState({ open: false, studentId: null });
 
   useEffect(() => {
     api.get('/utils/departments').then(r => setAvailableDepts(r.data)).catch(() => { });
@@ -675,7 +691,13 @@ const ShortlistRank = () => {
                       <span className="text-indigo-600 font-bold text-sm">{parseFloat(app.ranking_score || 0).toFixed(2)}</span>
                     </td>
                     <td className="px-5 py-3.5 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{app.full_name}</div>
+                      <div 
+                        className="text-sm font-medium text-indigo-600 hover:text-indigo-800 cursor-pointer hover:underline"
+                        onClick={() => setProfileModal({ open: true, studentId: app.student_id })}
+                        title="View Full Profile"
+                      >
+                        {app.full_name}
+                      </div>
                       <div className="text-xs text-gray-500">{app.cgpa} CGPA • {app.department || '-'}</div>
                     </td>
                     <td className="px-5 py-3.5 whitespace-nowrap">
@@ -912,6 +934,14 @@ const ShortlistRank = () => {
           </div>
         </div>
       )}
+
+      {/* Student Profile Modal */}
+      <StudentProfileModal 
+        open={profileModal.open} 
+        onClose={() => setProfileModal({ open: false, studentId: null })} 
+        studentId={profileModal.studentId} 
+        userRole="staff" 
+      />
     </div>
   );
 };

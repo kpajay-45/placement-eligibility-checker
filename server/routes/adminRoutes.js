@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const adminController = require('../controllers/adminController');
+const utilController = require('../controllers/utilController');
 const { verifyToken, authorizeRole } = require('../middlewares/authMiddleware');
 
 // All routes require ADMIN role
@@ -15,6 +16,7 @@ router.get('/stats', adminController.getStats);
 
 // ── Student Management ──
 router.get('/students', adminController.getAllStudents);
+router.get('/students/:studentId/full', utilController.getStudentFullDetails);
 router.post('/students/status', adminController.updateStudentStatus);
 
 // ── Activity Points Verification ──

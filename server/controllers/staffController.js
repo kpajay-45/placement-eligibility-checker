@@ -145,6 +145,7 @@ exports.getJobApplicants = async (req, res) => {
         a.is_eligible,
         a.is_overridden,
         a.override_reason,
+        s.student_id,
         s.full_name,
         s.register_number,
         s.cgpa,
@@ -161,7 +162,7 @@ exports.getJobApplicants = async (req, res) => {
       LEFT JOIN activity_points ap ON s.student_id = ap.student_id AND ap.status = 'APPROVED'
       WHERE a.job_role_id = ?
       GROUP BY a.application_id, a.status, a.is_eligible, a.is_overridden, a.override_reason,
-               s.full_name, s.register_number, s.cgpa, s.department, rv.resume_url, r.resume_title
+               s.student_id, s.full_name, s.register_number, s.cgpa, s.department, rv.resume_url, r.resume_title
       ORDER BY ranking_score DESC
     `;
     const [applicants] = await db.query(query, [jobId]);

@@ -74,7 +74,11 @@ const StudentDashboard = () => {
     personal_email: '',
     batch_year: '',
     history_of_arrears: '',
-    attendance_percentage: ''
+    attendance_percentage: '',
+    marks_10th: '',
+    marks_12th: '',
+    sgpa_sem1: '', sgpa_sem2: '', sgpa_sem3: '', sgpa_sem4: '',
+    sgpa_sem5: '', sgpa_sem6: '', sgpa_sem7: '', sgpa_sem8: ''
   });
   const [isEditingProfile, setIsEditingProfile] = useState(false);
 
@@ -114,7 +118,13 @@ const StudentDashboard = () => {
         personal_email: res.data.personal_email || '',
         batch_year: res.data.batch_year || '',
         history_of_arrears: res.data.history_of_arrears ?? '',
-        attendance_percentage: res.data.attendance_percentage || ''
+        attendance_percentage: res.data.attendance_percentage || '',
+        marks_10th: res.data.marks_10th ?? '',
+        marks_12th: res.data.marks_12th ?? '',
+        sgpa_sem1: res.data.sgpa_sem1 ?? '', sgpa_sem2: res.data.sgpa_sem2 ?? '',
+        sgpa_sem3: res.data.sgpa_sem3 ?? '', sgpa_sem4: res.data.sgpa_sem4 ?? '',
+        sgpa_sem5: res.data.sgpa_sem5 ?? '', sgpa_sem6: res.data.sgpa_sem6 ?? '',
+        sgpa_sem7: res.data.sgpa_sem7 ?? '', sgpa_sem8: res.data.sgpa_sem8 ?? ''
       });
     } catch (err) {
       console.error(err);
@@ -169,13 +179,51 @@ const StudentDashboard = () => {
   };
 
   const handleUpdateProfile = async () => {
+    const currentYear = new Date().getFullYear();
+    const cgpa = parseFloat(editForm.cgpa);
+    const arrears = parseInt(editForm.history_of_arrears);
+    const attendance = parseFloat(editForm.attendance_percentage);
+    const batchYear = parseInt(editForm.batch_year);
+
+    if (editForm.cgpa !== '' && (isNaN(cgpa) || cgpa < 0 || cgpa > 10)) {
+      alert('CGPA must be between 0.00 and 10.00.');
+      return;
+    }
+    if (editForm.history_of_arrears !== '' && (isNaN(arrears) || arrears < 0 || arrears > 48)) {
+      alert('Number of backlogs must be between 0 and 48.');
+      return;
+    }
+    if (editForm.attendance_percentage !== '' && (isNaN(attendance) || attendance < 0 || attendance > 100)) {
+      alert('Attendance percentage must be between 0 and 100.');
+      return;
+    }
+    if (editForm.batch_year !== '' && (isNaN(batchYear) || batchYear < 1998 || batchYear > currentYear)) {
+      alert(`Batch year must be between 1998 and ${currentYear}.`);
+      return;
+    }
+    // Validate 10th/12th marks
+    for (const [label, key] of [['10th marks', 'marks_10th'], ['12th marks', 'marks_12th']]) {
+      if (editForm[key] !== '') {
+        const n = parseFloat(editForm[key]);
+        if (isNaN(n) || n < 0 || n > 100) { alert(`${label} must be between 0 and 100.`); return; }
+      }
+    }
+    // Validate SGPA fields
+    for (let i = 1; i <= 8; i++) {
+      const key = `sgpa_sem${i}`;
+      if (editForm[key] !== '') {
+        const n = parseFloat(editForm[key]);
+        if (isNaN(n) || n < 0 || n > 10) { alert(`SGPA for Semester ${i} must be between 0 and 10.`); return; }
+      }
+    }
+
     try {
       await api.put('/student/profile', editForm);
       setIsEditingProfile(false);
       fetchProfile();
       alert('Profile updated successfully');
     } catch (err) {
-      alert('Failed to update profile');
+      alert(err.response?.data?.message || 'Failed to update profile');
     }
   };
 
@@ -458,10 +506,11 @@ const StudentDashboard = () => {
                 disabled={!isEditingProfile}
               />
               <TextField
-                label="Batch Year (e.g., 2025)"
+                label={`Batch Year (1998–${new Date().getFullYear()})`}
                 size="small"
                 fullWidth
                 type="number"
+                inputProps={{ min: 1998, max: new Date().getFullYear(), step: 1 }}
                 value={editForm.batch_year}
                 onChange={(e) => setEditForm({ ...editForm, batch_year: e.target.value })}
                 disabled={!isEditingProfile}
@@ -471,7 +520,7 @@ const StudentDashboard = () => {
                 size="small"
                 fullWidth
                 type="number"
-                inputProps={{ min: 0 }}
+                inputProps={{ min: 0, max: 48, step: 1 }}
                 value={editForm.history_of_arrears}
                 onChange={(e) => setEditForm({ ...editForm, history_of_arrears: e.target.value })}
                 disabled={!isEditingProfile}
@@ -486,6 +535,60 @@ const StudentDashboard = () => {
                 onChange={(e) => setEditForm({ ...editForm, attendance_percentage: e.target.value })}
                 disabled={!isEditingProfile}
               />
+            </div>
+          </div>
+
+          {/* ── Academic History Section ── */}
+          <div className="md:col-span-2">
+            <Divider sx={{ my: 2 }} />
+            <h3 className="text-sm font-semibold text-gray-600 mb-3">Board Exam Marks</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <TextField
+                label="10th Board Marks (%)"
+                size="small"
+                fullWidth
+                type="number"
+                inputProps={{ min: 0, max: 100, step: 0.01 }}
+                value={editForm.marks_10th}
+                onChange={(e) => setEditForm({ ...editForm, marks_10th: e.target.value })}
+                disabled={!isEditingProfile}
+                placeholder="e.g., 92.50"
+              />
+              <TextField
+                label="12th Board Marks (%)"
+                size="small"
+                fullWidth
+                type="number"
+                inputProps={{ min: 0, max: 100, step: 0.01 }}
+                value={editForm.marks_12th}
+                onChange={(e) => setEditForm({ ...editForm, marks_12th: e.target.value })}
+                disabled={!isEditingProfile}
+                placeholder="e.g., 88.00"
+              />
+            </div>
+
+            <Divider sx={{ my: 2 }} />
+            <h3 className="text-sm font-semibold text-gray-600 mb-3">Semester-wise SGPA</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[1,2,3,4,5,6,7,8].map(sem => {
+                const currentSem = parseInt(editForm.semester) || 8;
+                const isLocked = sem > currentSem;
+                return (
+                  <TextField
+                    key={sem}
+                    label={`Sem ${sem} SGPA`}
+                    size="small"
+                    fullWidth
+                    type="number"
+                    inputProps={{ min: 0, max: 10, step: 0.01 }}
+                    value={editForm[`sgpa_sem${sem}`]}
+                    onChange={(e) => setEditForm({ ...editForm, [`sgpa_sem${sem}`]: e.target.value })}
+                    disabled={!isEditingProfile || isLocked}
+                    placeholder={isLocked ? 'N/A' : '0.00–10.00'}
+                    helperText={isLocked ? `Sem ${sem} not reached` : ''}
+                  />
+                );
+              })}
             </div>
           </div>
         </div>

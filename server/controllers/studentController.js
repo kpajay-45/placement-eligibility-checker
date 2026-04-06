@@ -38,7 +38,10 @@ exports.getProfile = async (req, res) => {
 // 2. Update Profile
 exports.updateProfile = async (req, res) => {
   try {
-    let { full_name, department, semester, cgpa, register_number, personal_email, batch_year, history_of_arrears, attendance_percentage } = req.body;
+    let { full_name, department, semester, cgpa, register_number, personal_email, batch_year, history_of_arrears, attendance_percentage,
+          marks_10th, marks_12th,
+          sgpa_sem1, sgpa_sem2, sgpa_sem3, sgpa_sem4,
+          sgpa_sem5, sgpa_sem6, sgpa_sem7, sgpa_sem8 } = req.body;
 
     // Sanitize: convert empty strings to null for numeric columns to avoid MySQL integer parse errors
     const toNullIfEmpty = (v) => (v === '' || v === undefined) ? null : v;
@@ -51,6 +54,65 @@ exports.updateProfile = async (req, res) => {
     department = toNullIfEmpty(department);
     register_number = toNullIfEmpty(register_number);
     personal_email = toNullIfEmpty(personal_email);
+    marks_10th   = toNullIfEmpty(marks_10th);
+    marks_12th   = toNullIfEmpty(marks_12th);
+    sgpa_sem1 = toNullIfEmpty(sgpa_sem1); sgpa_sem2 = toNullIfEmpty(sgpa_sem2);
+    sgpa_sem3 = toNullIfEmpty(sgpa_sem3); sgpa_sem4 = toNullIfEmpty(sgpa_sem4);
+    sgpa_sem5 = toNullIfEmpty(sgpa_sem5); sgpa_sem6 = toNullIfEmpty(sgpa_sem6);
+    sgpa_sem7 = toNullIfEmpty(sgpa_sem7); sgpa_sem8 = toNullIfEmpty(sgpa_sem8);
+
+    // ── Validation ────────────────────────────────────────────────────────────
+    const currentYear = new Date().getFullYear();
+
+    if (cgpa !== null) {
+      const cgpaVal = parseFloat(cgpa);
+      if (isNaN(cgpaVal) || cgpaVal < 0 || cgpaVal > 10) {
+        return res.status(400).json({ message: 'CGPA must be between 0.00 and 10.00.' });
+      }
+    }
+
+    if (history_of_arrears !== null) {
+      const arrears = parseInt(history_of_arrears);
+      if (isNaN(arrears) || arrears < 0 || arrears > 48) {
+        return res.status(400).json({ message: 'Number of backlogs must be between 0 and 48.' });
+      }
+    }
+
+    if (attendance_percentage !== null) {
+      const attendance = parseFloat(attendance_percentage);
+      if (isNaN(attendance) || attendance < 0 || attendance > 100) {
+        return res.status(400).json({ message: 'Attendance percentage must be between 0 and 100.' });
+      }
+    }
+
+    if (batch_year !== null) {
+      const year = parseInt(batch_year);
+      if (isNaN(year) || year < 1998 || year > currentYear) {
+        return res.status(400).json({ message: `Batch year must be between 1998 and ${currentYear}.` });
+      }
+    }
+
+    // Validate marks (0–100)
+    for (const [label, val] of [['10th marks', marks_10th], ['12th marks', marks_12th]]) {
+      if (val !== null) {
+        const n = parseFloat(val);
+        if (isNaN(n) || n < 0 || n > 100) {
+          return res.status(400).json({ message: `${label} must be between 0 and 100.` });
+        }
+      }
+    }
+
+    // Validate SGPA (0–10 each)
+    const sgpaFields = [sgpa_sem1, sgpa_sem2, sgpa_sem3, sgpa_sem4, sgpa_sem5, sgpa_sem6, sgpa_sem7, sgpa_sem8];
+    for (let i = 0; i < sgpaFields.length; i++) {
+      if (sgpaFields[i] !== null) {
+        const n = parseFloat(sgpaFields[i]);
+        if (isNaN(n) || n < 0 || n > 10) {
+          return res.status(400).json({ message: `SGPA for Semester ${i + 1} must be between 0 and 10.` });
+        }
+      }
+    }
+    // ─────────────────────────────────────────────────────────────────────────
 
     // FIX: Use UPDATE with COALESCE to handle partial updates without triggering NOT NULL errors
     const [updateResult] = await db.query(
@@ -63,17 +125,27 @@ exports.updateProfile = async (req, res) => {
        personal_email = COALESCE(?, personal_email),
        batch_year = COALESCE(?, batch_year),
        history_of_arrears = COALESCE(?, history_of_arrears),
-       attendance_percentage = COALESCE(?, attendance_percentage)
+       attendance_percentage = COALESCE(?, attendance_percentage),
+       marks_10th = COALESCE(?, marks_10th),
+       marks_12th = COALESCE(?, marks_12th),
+       sgpa_sem1 = COALESCE(?, sgpa_sem1), sgpa_sem2 = COALESCE(?, sgpa_sem2),
+       sgpa_sem3 = COALESCE(?, sgpa_sem3), sgpa_sem4 = COALESCE(?, sgpa_sem4),
+       sgpa_sem5 = COALESCE(?, sgpa_sem5), sgpa_sem6 = COALESCE(?, sgpa_sem6),
+       sgpa_sem7 = COALESCE(?, sgpa_sem7), sgpa_sem8 = COALESCE(?, sgpa_sem8)
        WHERE user_id = ?`,
-      [full_name, department, semester, cgpa, register_number, personal_email, batch_year, history_of_arrears, attendance_percentage, req.user.user_id]
+      [full_name, department, semester, cgpa, register_number, personal_email, batch_year, history_of_arrears, attendance_percentage,
+       marks_10th, marks_12th,
+       sgpa_sem1, sgpa_sem2, sgpa_sem3, sgpa_sem4, sgpa_sem5, sgpa_sem6, sgpa_sem7, sgpa_sem8,
+       req.user.user_id]
     );
 
-    // If no record existed to update, try inserting (This will fail if required fields are missing, which is correct behavior for new profiles)
     if (updateResult.affectedRows === 0) {
       await db.query(
-        `INSERT INTO students (user_id, full_name, department, semester, cgpa, register_number, personal_email, batch_year, history_of_arrears, attendance_percentage) 
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [req.user.user_id, full_name, department, semester, cgpa, register_number, personal_email, batch_year, history_of_arrears, attendance_percentage]
+        `INSERT INTO students (user_id, full_name, department, semester, cgpa, register_number, personal_email, batch_year, history_of_arrears, attendance_percentage,
+         marks_10th, marks_12th, sgpa_sem1, sgpa_sem2, sgpa_sem3, sgpa_sem4, sgpa_sem5, sgpa_sem6, sgpa_sem7, sgpa_sem8) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [req.user.user_id, full_name, department, semester, cgpa, register_number, personal_email, batch_year, history_of_arrears, attendance_percentage,
+         marks_10th, marks_12th, sgpa_sem1, sgpa_sem2, sgpa_sem3, sgpa_sem4, sgpa_sem5, sgpa_sem6, sgpa_sem7, sgpa_sem8]
       );
     }
 

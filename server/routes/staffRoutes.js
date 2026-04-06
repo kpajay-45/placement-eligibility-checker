@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const staffController = require('../controllers/staffController');
+const utilController = require('../controllers/utilController');
 const { verifyToken, authorizeRole } = require('../middlewares/authMiddleware');
 
 // All routes require PLACEMENT_STAFF role
@@ -16,6 +17,7 @@ router.post('/applications/status', staffController.updateApplicationStatus);
 router.post('/jobs/shortlist', staffController.generateShortlist);
 router.get('/jobs/:jobId/shortlists', staffController.getShortlists);
 router.post('/applications/override', staffController.overrideEligibility);
+router.get('/students/:studentId/full', utilController.getStudentFullDetails);
 
 // Job edit / delete
 router.get('/jobs/:jobId/details', staffController.getJobDetails);

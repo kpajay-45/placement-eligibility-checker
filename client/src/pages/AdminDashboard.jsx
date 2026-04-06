@@ -18,6 +18,7 @@ import {
   PersonOff as DeactivateIcon,
   PersonAdd as ActivateIcon
 } from '@mui/icons-material';
+import StudentProfileModal from '../components/StudentProfileModal';
 
 // ── Stat Card Component ───────────────────────────────────────────────────────
 const StatCard = ({ icon, label, value, color, subLabel }) => (
@@ -73,6 +74,7 @@ const AdminDashboard = () => {
   // Modals/Dialogs
   const [proofModal, setProofModal] = useState({ open: false, url: '' });
   const [rejectDialog, setRejectDialog] = useState({ open: false, activityId: null, reason: '' });
+  const [profileModal, setProfileModal] = useState({ open: false, studentId: null });
 
   // Password Change
   const [pwDialogOpen, setPwDialogOpen] = useState(false);
@@ -438,17 +440,30 @@ const AdminDashboard = () => {
                   <TableCell className="text-xs text-gray-600">{st.offers}</TableCell>
                   <TableCell><StatusBadge status={st.status} /></TableCell>
                   <TableCell>
-                    <Tooltip title={st.status === 'ACTIVE' ? 'Deactivate student' : 'Activate student'}>
-                      <Button
-                        size="small"
-                        variant="text"
-                        color={st.status === 'ACTIVE' ? 'error' : 'success'}
-                        onClick={() => handleStudentStatus(st.user_id, st.status)}
-                        sx={{ textTransform: 'none', fontSize: '0.7rem', minWidth: 0 }}
-                      >
-                        {st.status === 'ACTIVE' ? 'Deactivate' : 'Activate'}
-                      </Button>
-                    </Tooltip>
+                    <div className="flex gap-2">
+                      <Tooltip title="View full profile">
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          color="primary"
+                          onClick={() => setProfileModal({ open: true, studentId: st.student_id })}
+                          sx={{ textTransform: 'none', fontSize: '0.7rem', minWidth: 0, px: 1 }}
+                        >
+                          View
+                        </Button>
+                      </Tooltip>
+                      <Tooltip title={st.status === 'ACTIVE' ? 'Deactivate student' : 'Activate student'}>
+                        <Button
+                          size="small"
+                          variant="text"
+                          color={st.status === 'ACTIVE' ? 'error' : 'success'}
+                          onClick={() => handleStudentStatus(st.user_id, st.status)}
+                          sx={{ textTransform: 'none', fontSize: '0.7rem', minWidth: 0 }}
+                        >
+                          {st.status === 'ACTIVE' ? 'Deactivate' : 'Activate'}
+                        </Button>
+                      </Tooltip>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -1006,6 +1021,14 @@ const AdminDashboard = () => {
           </div>
         </div>
       )}
+
+      {/* Student Profile Modal */}
+      <StudentProfileModal 
+        open={profileModal.open} 
+        onClose={() => setProfileModal({ open: false, studentId: null })} 
+        studentId={profileModal.studentId} 
+        userRole="admin" 
+      />
     </div>
   );
 };
