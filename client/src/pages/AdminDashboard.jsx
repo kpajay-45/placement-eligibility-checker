@@ -86,9 +86,9 @@ const AdminDashboard = () => {
   const { logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  const showMsg = (text, severity = 'success') => { 
-    setActionMsg({ text, severity }); 
-    setTimeout(() => setActionMsg({ text: '', severity: 'success' }), 3500); 
+  const showMsg = (text, severity = 'success') => {
+    setActionMsg({ text, severity });
+    setTimeout(() => setActionMsg({ text: '', severity: 'success' }), 3500);
   };
 
   const fetchStats = useCallback(async () => {
@@ -100,8 +100,8 @@ const AdminDashboard = () => {
 
   const fetchStaff = useCallback(async (page = staffPage) => {
     setLoading(true);
-    try { 
-      const res = await api.get(`/admin/staff?page=${page}&search=${staffSearch}`); 
+    try {
+      const res = await api.get(`/admin/staff?page=${page}&search=${staffSearch}`);
       setStaffData(res.data);
       setStaffPage(res.data.pagination.page);
     }
@@ -111,8 +111,8 @@ const AdminDashboard = () => {
 
   const fetchStudents = useCallback(async (page = studentPage) => {
     setLoading(true);
-    try { 
-      const res = await api.get(`/admin/students?page=${page}&search=${studentSearch}`); 
+    try {
+      const res = await api.get(`/admin/students?page=${page}&search=${studentSearch}`);
       setStudentData(res.data);
       setStudentPage(res.data.pagination.page);
     }
@@ -170,7 +170,7 @@ const AdminDashboard = () => {
 
 
   useEffect(() => { fetchStats(); }, [fetchStats]);
-  
+
   // Fetch data when tab changes or search/page changes (with debounce for search)
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
@@ -326,60 +326,60 @@ const AdminDashboard = () => {
       </div>
       {loading ? renderLoader() : (
         <>
-        <TableContainer component={Paper} elevation={0} className="border border-gray-200 rounded-xl overflow-hidden">
-          <Table>
-            <TableHead>
-              <TableRow sx={{ bgcolor: '#f9fafb' }}>
-                <TableCell><span className="font-semibold text-gray-600 text-sm">Name</span></TableCell>
-                <TableCell><span className="font-semibold text-gray-600 text-sm">Email</span></TableCell>
-                <TableCell><span className="font-semibold text-gray-600 text-sm">Designation</span></TableCell>
-                <TableCell><span className="font-semibold text-gray-600 text-sm">Status</span></TableCell>
-                <TableCell><span className="font-semibold text-gray-600 text-sm">Action</span></TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {staffData.data.map(s => (
-                <TableRow key={s.user_id} hover>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <Avatar sx={{ width: 32, height: 32, bgcolor: '#818cf8', fontSize: '0.8rem' }}>
-                        {(s.name || s.email)?.[0]?.toUpperCase()}
-                      </Avatar>
-                      <span className="font-medium text-gray-800">{s.name || '—'}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-gray-600 text-sm">{s.email}</TableCell>
-                  <TableCell className="text-gray-600 text-sm">{s.designation || '—'}</TableCell>
-                  <TableCell><StatusBadge status={s.status} /></TableCell>
-                  <TableCell>
-                    <Tooltip title={s.status === 'ACTIVE' ? 'Deactivate account' : 'Activate account'}>
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        color={s.status === 'ACTIVE' ? 'error' : 'success'}
-                        startIcon={s.status === 'ACTIVE' ? <DeactivateIcon /> : <ActivateIcon />}
-                        onClick={() => handleStaffStatus(s.user_id, s.status)}
-                        sx={{ textTransform: 'none', fontSize: '0.75rem' }}
-                      >
-                        {s.status === 'ACTIVE' ? 'Deactivate' : 'Activate'}
-                      </Button>
-                    </Tooltip>
-                  </TableCell>
+          <TableContainer component={Paper} elevation={0} className="border border-gray-200 rounded-xl overflow-hidden">
+            <Table>
+              <TableHead>
+                <TableRow sx={{ bgcolor: '#f9fafb' }}>
+                  <TableCell><span className="font-semibold text-gray-600 text-sm">Name</span></TableCell>
+                  <TableCell><span className="font-semibold text-gray-600 text-sm">Email</span></TableCell>
+                  <TableCell><span className="font-semibold text-gray-600 text-sm">Designation</span></TableCell>
+                  <TableCell><span className="font-semibold text-gray-600 text-sm">Status</span></TableCell>
+                  <TableCell><span className="font-semibold text-gray-600 text-sm">Action</span></TableCell>
                 </TableRow>
-              ))}
-              {staffData.data.length === 0 && (
-                <TableRow><TableCell colSpan={5} align="center" className="text-gray-400 py-10">No staff found.</TableCell></TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-        <div className="flex items-center justify-between mt-4 px-1">
-          <p className="text-xs text-gray-500">Page {staffData.pagination.page} of {staffData.pagination.totalPages} ({staffData.pagination.total} total)</p>
-          <div className="flex gap-2">
-            <button onClick={() => setStaffPage(prev => prev - 1)} disabled={staffData.pagination.page <= 1} className="px-3 py-1 text-xs font-medium border rounded disabled:opacity-40" style={{ borderColor:'#d1d5db', color:'#374151' }}>Prev</button>
-            <button onClick={() => setStaffPage(prev => prev + 1)} disabled={staffData.pagination.page >= staffData.pagination.totalPages} className="px-3 py-1 text-xs font-medium border rounded disabled:opacity-40" style={{ borderColor:'#d1d5db', color:'#374151' }}>Next</button>
+              </TableHead>
+              <TableBody>
+                {staffData.data.map(s => (
+                  <TableRow key={s.user_id} hover>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <Avatar sx={{ width: 32, height: 32, bgcolor: '#818cf8', fontSize: '0.8rem' }}>
+                          {(s.name || s.email)?.[0]?.toUpperCase()}
+                        </Avatar>
+                        <span className="font-medium text-gray-800">{s.name || '—'}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-gray-600 text-sm">{s.email}</TableCell>
+                    <TableCell className="text-gray-600 text-sm">{s.designation || '—'}</TableCell>
+                    <TableCell><StatusBadge status={s.status} /></TableCell>
+                    <TableCell>
+                      <Tooltip title={s.status === 'ACTIVE' ? 'Deactivate account' : 'Activate account'}>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          color={s.status === 'ACTIVE' ? 'error' : 'success'}
+                          startIcon={s.status === 'ACTIVE' ? <DeactivateIcon /> : <ActivateIcon />}
+                          onClick={() => handleStaffStatus(s.user_id, s.status)}
+                          sx={{ textTransform: 'none', fontSize: '0.75rem' }}
+                        >
+                          {s.status === 'ACTIVE' ? 'Deactivate' : 'Activate'}
+                        </Button>
+                      </Tooltip>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {staffData.data.length === 0 && (
+                  <TableRow><TableCell colSpan={5} align="center" className="text-gray-400 py-10">No staff found.</TableCell></TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+          <div className="flex items-center justify-between mt-4 px-1">
+            <p className="text-xs text-gray-500">Page {staffData.pagination.page} of {staffData.pagination.totalPages} ({staffData.pagination.total} total)</p>
+            <div className="flex gap-2">
+              <button onClick={() => setStaffPage(prev => prev - 1)} disabled={staffData.pagination.page <= 1} className="px-3 py-1 text-xs font-medium border rounded disabled:opacity-40" style={{ borderColor: '#d1d5db', color: '#374151' }}>Prev</button>
+              <button onClick={() => setStaffPage(prev => prev + 1)} disabled={staffData.pagination.page >= staffData.pagination.totalPages} className="px-3 py-1 text-xs font-medium border rounded disabled:opacity-40" style={{ borderColor: '#d1d5db', color: '#374151' }}>Next</button>
+            </div>
           </div>
-        </div>
         </>
       )}
     </div>
@@ -405,81 +405,81 @@ const AdminDashboard = () => {
       </div>
       {loading ? renderLoader() : (
         <>
-        <TableContainer component={Paper} elevation={0} className="border border-gray-200 rounded-xl overflow-hidden">
-          <Table size="small">
-            <TableHead>
-              <TableRow sx={{ bgcolor: '#f9fafb' }}>
-                {['Name', 'Reg. No.', 'Dept', 'Sem', 'CGPA', 'Arrears', 'Apps', 'Offers', 'Status', 'Action'].map(h => (
-                  <TableCell key={h}><span className="font-semibold text-gray-600 text-xs">{h}</span></TableCell>
-                ))}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {studentData.data.map(st => (
-                <TableRow key={st.student_id} hover>
-                  <TableCell>
-                    <div>
-                      <p className="font-medium text-gray-800 text-sm">{st.full_name}</p>
-                      <p className="text-xs text-gray-400">{st.email}</p>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-xs text-gray-600">{st.register_number}</TableCell>
-                  <TableCell className="text-xs text-gray-600">{st.department}</TableCell>
-                  <TableCell className="text-xs text-gray-600">{st.semester}</TableCell>
-                  <TableCell>
-                    <span className={`text-xs font-semibold ${parseFloat(st.cgpa) >= 7 ? 'text-green-600' : 'text-orange-600'}`}>
-                      {st.cgpa}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <span className={`text-xs font-semibold ${(st.history_of_arrears || 0) > 0 ? 'text-red-600' : 'text-green-600'}`}>
-                      {st.history_of_arrears ?? 0}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-xs text-gray-600">{st.total_applications}</TableCell>
-                  <TableCell className="text-xs text-gray-600">{st.offers}</TableCell>
-                  <TableCell><StatusBadge status={st.status} /></TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Tooltip title="View full profile">
-                        <Button
-                          size="small"
-                          variant="outlined"
-                          color="primary"
-                          onClick={() => setProfileModal({ open: true, studentId: st.student_id })}
-                          sx={{ textTransform: 'none', fontSize: '0.7rem', minWidth: 0, px: 1 }}
-                        >
-                          View
-                        </Button>
-                      </Tooltip>
-                      <Tooltip title={st.status === 'ACTIVE' ? 'Deactivate student' : 'Activate student'}>
-                        <Button
-                          size="small"
-                          variant="text"
-                          color={st.status === 'ACTIVE' ? 'error' : 'success'}
-                          onClick={() => handleStudentStatus(st.user_id, st.status)}
-                          sx={{ textTransform: 'none', fontSize: '0.7rem', minWidth: 0 }}
-                        >
-                          {st.status === 'ACTIVE' ? 'Deactivate' : 'Activate'}
-                        </Button>
-                      </Tooltip>
-                    </div>
-                  </TableCell>
+          <TableContainer component={Paper} elevation={0} className="border border-gray-200 rounded-xl overflow-hidden">
+            <Table size="small">
+              <TableHead>
+                <TableRow sx={{ bgcolor: '#f9fafb' }}>
+                  {['Name', 'Reg. No.', 'Dept', 'Sem', 'CGPA', 'Arrears', 'Apps', 'Offers', 'Status', 'Action'].map(h => (
+                    <TableCell key={h}><span className="font-semibold text-gray-600 text-xs">{h}</span></TableCell>
+                  ))}
                 </TableRow>
-              ))}
-              {studentData.data.length === 0 && (
-                <TableRow><TableCell colSpan={10} align="center" className="text-gray-400 py-10">No students registered.</TableCell></TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-        <div className="flex items-center justify-between mt-4 px-1">
-          <p className="text-xs text-gray-500">Page {studentData.pagination.page} of {studentData.pagination.totalPages} ({studentData.pagination.total} total)</p>
-          <div className="flex gap-2">
-            <button onClick={() => setStudentPage(prev => prev - 1)} disabled={studentData.pagination.page <= 1} className="px-3 py-1 text-xs font-medium border rounded disabled:opacity-40" style={{ borderColor:'#d1d5db', color:'#374151' }}>Prev</button>
-            <button onClick={() => setStudentPage(prev => prev + 1)} disabled={studentData.pagination.page >= studentData.pagination.totalPages} className="px-3 py-1 text-xs font-medium border rounded disabled:opacity-40" style={{ borderColor:'#d1d5db', color:'#374151' }}>Next</button>
+              </TableHead>
+              <TableBody>
+                {studentData.data.map(st => (
+                  <TableRow key={st.student_id} hover>
+                    <TableCell>
+                      <div>
+                        <p className="font-medium text-gray-800 text-sm">{st.full_name}</p>
+                        <p className="text-xs text-gray-400">{st.email}</p>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-xs text-gray-600">{st.register_number}</TableCell>
+                    <TableCell className="text-xs text-gray-600">{st.department}</TableCell>
+                    <TableCell className="text-xs text-gray-600">{st.semester}</TableCell>
+                    <TableCell>
+                      <span className={`text-xs font-semibold ${parseFloat(st.cgpa) >= 7 ? 'text-green-600' : 'text-orange-600'}`}>
+                        {st.cgpa}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <span className={`text-xs font-semibold ${(st.history_of_arrears || 0) > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                        {st.history_of_arrears ?? 0}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-xs text-gray-600">{st.total_applications}</TableCell>
+                    <TableCell className="text-xs text-gray-600">{st.offers}</TableCell>
+                    <TableCell><StatusBadge status={st.status} /></TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        <Tooltip title="View full profile">
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            color="primary"
+                            onClick={() => setProfileModal({ open: true, studentId: st.student_id })}
+                            sx={{ textTransform: 'none', fontSize: '0.7rem', minWidth: 0, px: 1 }}
+                          >
+                            View
+                          </Button>
+                        </Tooltip>
+                        <Tooltip title={st.status === 'ACTIVE' ? 'Deactivate student' : 'Activate student'}>
+                          <Button
+                            size="small"
+                            variant="text"
+                            color={st.status === 'ACTIVE' ? 'error' : 'success'}
+                            onClick={() => handleStudentStatus(st.user_id, st.status)}
+                            sx={{ textTransform: 'none', fontSize: '0.7rem', minWidth: 0 }}
+                          >
+                            {st.status === 'ACTIVE' ? 'Deactivate' : 'Activate'}
+                          </Button>
+                        </Tooltip>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {studentData.data.length === 0 && (
+                  <TableRow><TableCell colSpan={10} align="center" className="text-gray-400 py-10">No students registered.</TableCell></TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+          <div className="flex items-center justify-between mt-4 px-1">
+            <p className="text-xs text-gray-500">Page {studentData.pagination.page} of {studentData.pagination.totalPages} ({studentData.pagination.total} total)</p>
+            <div className="flex gap-2">
+              <button onClick={() => setStudentPage(prev => prev - 1)} disabled={studentData.pagination.page <= 1} className="px-3 py-1 text-xs font-medium border rounded disabled:opacity-40" style={{ borderColor: '#d1d5db', color: '#374151' }}>Prev</button>
+              <button onClick={() => setStudentPage(prev => prev + 1)} disabled={studentData.pagination.page >= studentData.pagination.totalPages} className="px-3 py-1 text-xs font-medium border rounded disabled:opacity-40" style={{ borderColor: '#d1d5db', color: '#374151' }}>Next</button>
+            </div>
           </div>
-        </div>
         </>
       )}
     </div>
@@ -497,69 +497,69 @@ const AdminDashboard = () => {
           </div>
         ) : (
           <>
-          <div className="flex flex-col gap-4">
-            {activityData.data.map(ap => (
-              <div key={ap.activity_id} className="bg-white rounded-xl border border-gray-200 p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:border-indigo-200 transition-colors shadow-sm">
-                <div className="flex items-start gap-4">
-                  <div className="p-2.5 bg-amber-50 rounded-lg">
-                    <ActivityIcon sx={{ color: '#d97706' }} />
+            <div className="flex flex-col gap-4">
+              {activityData.data.map(ap => (
+                <div key={ap.activity_id} className="bg-white rounded-xl border border-gray-200 p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:border-indigo-200 transition-colors shadow-sm">
+                  <div className="flex items-start gap-4">
+                    <div className="p-2.5 bg-amber-50 rounded-lg">
+                      <ActivityIcon sx={{ color: '#d97706' }} />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-800">{ap.activity_type}</p>
+                      <p className="text-sm text-gray-500 mt-0.5">
+                        <span className="font-medium text-gray-700">{ap.full_name}</span>
+                        <span className="text-gray-400"> · {ap.register_number} · {ap.department}</span>
+                      </p>
+                      {ap.proof_url && (
+                        <Button
+                          size="small"
+                          variant="text"
+                          onClick={() => setProofModal({ open: true, url: ap.proof_url })}
+                          sx={{ textTransform: 'none', mt: 1, p: 0, minWidth: 0, fontSize: '0.75rem' }}
+                        >
+                          View Proof
+                        </Button>
+                      )}
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-semibold text-gray-800">{ap.activity_type}</p>
-                    <p className="text-sm text-gray-500 mt-0.5">
-                      <span className="font-medium text-gray-700">{ap.full_name}</span>
-                      <span className="text-gray-400"> · {ap.register_number} · {ap.department}</span>
-                    </p>
-                    {ap.proof_url && (
-                      <Button 
-                        size="small" 
-                        variant="text" 
-                        onClick={() => setProofModal({ open: true, url: ap.proof_url })}
-                        sx={{ textTransform: 'none', mt: 1, p: 0, minWidth: 0, fontSize: '0.75rem' }}
+                  <div className="flex items-center gap-4">
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-indigo-600">{ap.points}</p>
+                      <p className="text-xs text-gray-400">points</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="contained"
+                        color="success"
+                        size="small"
+                        startIcon={<CheckIcon />}
+                        onClick={() => handleVerifyActivity(ap.activity_id, true)}
+                        sx={{ textTransform: 'none', fontWeight: 600 }}
                       >
-                        View Proof
+                        Approve
                       </Button>
-                    )}
+                      <Button
+                        variant="outlined"
+                        color="error"
+                        size="small"
+                        startIcon={<RejectIcon />}
+                        onClick={() => setRejectDialog({ open: true, activityId: ap.activity_id, reason: '' })}
+                        sx={{ textTransform: 'none', fontWeight: 600 }}
+                      >
+                        Reject
+                      </Button>
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-4">
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-indigo-600">{ap.points}</p>
-                    <p className="text-xs text-gray-400">points</p>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="contained"
-                      color="success"
-                      size="small"
-                      startIcon={<CheckIcon />}
-                      onClick={() => handleVerifyActivity(ap.activity_id, true)}
-                      sx={{ textTransform: 'none', fontWeight: 600 }}
-                    >
-                      Approve
-                    </Button>
-                    <Button
-                      variant="outlined"
-                      color="error"
-                      size="small"
-                      startIcon={<RejectIcon />}
-                      onClick={() => setRejectDialog({ open: true, activityId: ap.activity_id, reason: '' })}
-                      sx={{ textTransform: 'none', fontWeight: 600 }}
-                    >
-                      Reject
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="flex items-center justify-between mt-6 px-1">
-            <p className="text-xs text-gray-500">Page {activityData.pagination.page} of {activityData.pagination.totalPages}</p>
-            <div className="flex gap-2">
-              <button onClick={() => setActivityPage(prev => prev - 1)} disabled={activityData.pagination.page <= 1} className="px-3 py-1 text-xs font-medium border rounded disabled:opacity-40" style={{ borderColor:'#d1d5db', color:'#374151' }}>Prev</button>
-              <button onClick={() => setActivityPage(prev => prev + 1)} disabled={activityData.pagination.page >= activityData.pagination.totalPages} className="px-3 py-1 text-xs font-medium border rounded disabled:opacity-40" style={{ borderColor:'#d1d5db', color:'#374151' }}>Next</button>
+              ))}
             </div>
-          </div>
+            <div className="flex items-center justify-between mt-6 px-1">
+              <p className="text-xs text-gray-500">Page {activityData.pagination.page} of {activityData.pagination.totalPages}</p>
+              <div className="flex gap-2">
+                <button onClick={() => setActivityPage(prev => prev - 1)} disabled={activityData.pagination.page <= 1} className="px-3 py-1 text-xs font-medium border rounded disabled:opacity-40" style={{ borderColor: '#d1d5db', color: '#374151' }}>Prev</button>
+                <button onClick={() => setActivityPage(prev => prev + 1)} disabled={activityData.pagination.page >= activityData.pagination.totalPages} className="px-3 py-1 text-xs font-medium border rounded disabled:opacity-40" style={{ borderColor: '#d1d5db', color: '#374151' }}>Next</button>
+              </div>
+            </div>
           </>
         )
       )}
@@ -573,7 +573,7 @@ const AdminDashboard = () => {
       return (
         <div>
           <div className="flex items-center gap-3 mb-6">
-            <button 
+            <button
               onClick={() => setSelectedCompany(null)}
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-500"
             >
@@ -600,7 +600,7 @@ const AdminDashboard = () => {
                       <WorkIcon sx={{ color: '#6366f1', fontSize: '1.2rem' }} />
                       <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider">Job Details</h3>
                     </div>
-                    
+
                     <div className="space-y-5">
                       <div>
                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Company</p>
@@ -646,7 +646,7 @@ const AdminDashboard = () => {
                             <span className="font-bold text-gray-700">{activeRole.max_backlogs ?? '0'}</span>
                           </div>
                           <div className="mt-2 text-[10px] text-gray-500 leading-normal">
-                            <span className="font-bold text-gray-400 uppercase tracking-tighter">DEPARTMENTS:</span><br/>
+                            <span className="font-bold text-gray-400 uppercase tracking-tighter">DEPARTMENTS:</span><br />
                             {activeRole.eligible_departments || 'All Departments'}
                           </div>
                         </div>
@@ -662,8 +662,8 @@ const AdminDashboard = () => {
               {roles.map(role => {
                 const analytics = roleAnalytics[role.job_role_id];
                 return (
-                  <div 
-                    key={role.job_role_id} 
+                  <div
+                    key={role.job_role_id}
                     className={`bg-white rounded-xl border overflow-hidden shadow-sm transition-all cursor-pointer ${selectedRoleId === role.job_role_id ? 'border-indigo-500 ring-2 ring-indigo-50' : 'border-gray-200 hover:border-indigo-200'}`}
                     onClick={() => {
                       setSelectedRoleId(role.job_role_id);
@@ -677,7 +677,7 @@ const AdminDashboard = () => {
                       </div>
                       <Chip label="Full Time" size="small" sx={{ fontWeight: 600, bgcolor: '#e0e7ff', color: '#4338ca' }} />
                     </div>
-                    
+
                     <div className="p-5">
                       {analytics?.loading ? <CircularProgress size={20} /> : (
                         analytics?.stats && (
@@ -720,7 +720,7 @@ const AdminDashboard = () => {
                           </div>
                         </div>
                       )}
-                      
+
                       {(!analytics?.students || analytics.students.length === 0) && !analytics?.loading && (
                         <p className="text-center py-4 text-xs text-gray-400 italic">No offers issued yet for this role.</p>
                       )}
@@ -757,8 +757,8 @@ const AdminDashboard = () => {
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {companyData.data.map(c => (
-                <div 
-                  key={c.company_id} 
+                <div
+                  key={c.company_id}
                   className="bg-white rounded-xl border border-gray-200 p-5 hover:border-indigo-300 hover:shadow-md transition-all cursor-pointer group"
                   onClick={() => fetchCompanyDetails(c.company_id)}
                 >
@@ -773,7 +773,7 @@ const AdminDashboard = () => {
                   <div className="flex items-center justify-between pt-4 border-t border-gray-50 text-xs font-medium text-gray-400">
                     <span>{c.industry}</span>
                     <span className="flex items-center gap-1 group-hover:text-indigo-600">
-                      View details 
+                      View details
                       <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
                       </svg>
@@ -788,8 +788,8 @@ const AdminDashboard = () => {
             <div className="flex items-center justify-between mt-8 px-1">
               <p className="text-xs text-gray-500">Page {companyData.pagination.page} of {companyData.pagination.totalPages} ({companyData.pagination.total} total)</p>
               <div className="flex gap-2">
-                <button onClick={() => setCompanyPage(prev => prev - 1)} disabled={companyData.pagination.page <= 1} className="px-3 py-1 text-xs font-medium border rounded disabled:opacity-40" style={{ borderColor:'#d1d5db', color:'#374151' }}>Prev</button>
-                <button onClick={() => setCompanyPage(prev => prev + 1)} disabled={companyData.pagination.page >= companyData.pagination.totalPages} className="px-3 py-1 text-xs font-medium border rounded disabled:opacity-40" style={{ borderColor:'#d1d5db', color:'#374151' }}>Next</button>
+                <button onClick={() => setCompanyPage(prev => prev - 1)} disabled={companyData.pagination.page <= 1} className="px-3 py-1 text-xs font-medium border rounded disabled:opacity-40" style={{ borderColor: '#d1d5db', color: '#374151' }}>Prev</button>
+                <button onClick={() => setCompanyPage(prev => prev + 1)} disabled={companyData.pagination.page >= companyData.pagination.totalPages} className="px-3 py-1 text-xs font-medium border rounded disabled:opacity-40" style={{ borderColor: '#d1d5db', color: '#374151' }}>Next</button>
               </div>
             </div>
           </>
@@ -953,9 +953,9 @@ const AdminDashboard = () => {
             {pwError && <p className="text-sm text-red-600 mb-3 bg-red-50 p-2 rounded">{pwError}</p>}
             {pwSuccess && <p className="text-sm text-green-600 mb-3 bg-green-50 p-2 rounded">{pwSuccess}</p>}
             <div className="flex flex-col gap-3 mb-4">
-              <input type="password" placeholder="Current Password" className="p-2 border rounded text-sm" value={pwForm.currentPassword} onChange={e => setPwForm(f => ({...f, currentPassword: e.target.value}))} />
-              <input type="password" placeholder="New Password" className="p-2 border rounded text-sm" value={pwForm.newPassword} onChange={e => setPwForm(f => ({...f, newPassword: e.target.value}))} />
-              <input type="password" placeholder="Confirm New Password" className="p-2 border rounded text-sm" value={pwForm.confirmPassword} onChange={e => setPwForm(f => ({...f, confirmPassword: e.target.value}))} />
+              <input type="password" placeholder="Current Password" className="p-2 border rounded text-sm" value={pwForm.currentPassword} onChange={e => setPwForm(f => ({ ...f, currentPassword: e.target.value }))} />
+              <input type="password" placeholder="New Password" className="p-2 border rounded text-sm" value={pwForm.newPassword} onChange={e => setPwForm(f => ({ ...f, newPassword: e.target.value }))} />
+              <input type="password" placeholder="Confirm New Password" className="p-2 border rounded text-sm" value={pwForm.confirmPassword} onChange={e => setPwForm(f => ({ ...f, confirmPassword: e.target.value }))} />
             </div>
             <div className="flex justify-end gap-2">
               <button onClick={() => { setPwDialogOpen(false); setPwError(''); setPwSuccess(''); }} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded text-sm font-medium">Cancel</button>
@@ -1005,14 +1005,14 @@ const AdminDashboard = () => {
               onChange={(e) => setRejectDialog(prev => ({ ...prev, reason: e.target.value }))}
             ></textarea>
             <div className="flex justify-end gap-2">
-              <button 
-                onClick={() => setRejectDialog({ open: false, activityId: null, reason: '' })} 
+              <button
+                onClick={() => setRejectDialog({ open: false, activityId: null, reason: '' })}
                 className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg text-sm font-medium transition-colors"
               >
                 Cancel
               </button>
-              <button 
-                onClick={() => handleVerifyActivity(rejectDialog.activityId, false, rejectDialog.reason)} 
+              <button
+                onClick={() => handleVerifyActivity(rejectDialog.activityId, false, rejectDialog.reason)}
                 className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-semibold hover:bg-red-700 transition-colors shadow-sm"
               >
                 Confirm Rejection
@@ -1023,11 +1023,11 @@ const AdminDashboard = () => {
       )}
 
       {/* Student Profile Modal */}
-      <StudentProfileModal 
-        open={profileModal.open} 
-        onClose={() => setProfileModal({ open: false, studentId: null })} 
-        studentId={profileModal.studentId} 
-        userRole="admin" 
+      <StudentProfileModal
+        open={profileModal.open}
+        onClose={() => setProfileModal({ open: false, studentId: null })}
+        studentId={profileModal.studentId}
+        userRole="admin"
       />
     </div>
   );

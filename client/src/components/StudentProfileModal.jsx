@@ -60,7 +60,7 @@ const StudentProfileModal = ({ open, onClose, studentId, userRole }) => {
         ) : profileData ? (
           <Grid container spacing={3}>
             {/* Header / Basic Info */}
-            <Grid item xs={12}>
+            <Grid size={12}>
               <Box display="flex" justifyContent="space-between" alignItems="flex-start">
                 <Box>
                   <Typography variant="h5" fontWeight="bold" gutterBottom>{profileData.full_name}</Typography>
@@ -76,35 +76,35 @@ const StudentProfileModal = ({ open, onClose, studentId, userRole }) => {
             </Grid>
 
             {/* Academic Stats */}
-            <Grid item xs={12}>
+            <Grid size={12}>
               <Paper variant="outlined" sx={{ p: 2, bgcolor: '#f9fafb' }}>
                 <Typography variant="subtitle2" color="textSecondary" gutterBottom>Academic Overview</Typography>
                 <Grid container spacing={2}>
-                  <Grid item xs={6} sm={3}>
+                  <Grid size={{ xs: 6, sm: 3 }}>
                     <Typography variant="h6">{Number(profileData.cgpa).toFixed(2)}</Typography>
                     <Typography variant="body2" color="textSecondary">CGPA</Typography>
                   </Grid>
-                  <Grid item xs={6} sm={3}>
+                  <Grid size={{ xs: 6, sm: 3 }}>
                     <Typography variant="h6">{profileData.semester}</Typography>
                     <Typography variant="body2" color="textSecondary">Semester</Typography>
                   </Grid>
-                  <Grid item xs={6} sm={3}>
+                  <Grid size={{ xs: 6, sm: 3 }}>
                     <Typography variant="h6">{profileData.history_of_arrears || 0}</Typography>
                     <Typography variant="body2" color="textSecondary">Backlogs</Typography>
                   </Grid>
-                  <Grid item xs={6} sm={3}>
+                  <Grid size={{ xs: 6, sm: 3 }}>
                     <Typography variant="h6">{profileData.batch_year || 'N/A'}</Typography>
                     <Typography variant="body2" color="textSecondary">Batch</Typography>
                   </Grid>
-                  <Grid item xs={6} sm={3}>
+                  <Grid size={{ xs: 6, sm: 3 }}>
                     <Typography variant="h6">{profileData.attendance_percentage != null ? `${Number(profileData.attendance_percentage).toFixed(1)}%` : 'N/A'}</Typography>
                     <Typography variant="body2" color="textSecondary">Attendance</Typography>
                   </Grid>
-                  <Grid item xs={6} sm={3}>
+                  <Grid size={{ xs: 6, sm: 3 }}>
                     <Typography variant="h6">{profileData.marks_10th != null ? `${Number(profileData.marks_10th).toFixed(1)}%` : 'N/A'}</Typography>
                     <Typography variant="body2" color="textSecondary">10th Marks</Typography>
                   </Grid>
-                  <Grid item xs={6} sm={3}>
+                  <Grid size={{ xs: 6, sm: 3 }}>
                     <Typography variant="h6">{profileData.marks_12th != null ? `${Number(profileData.marks_12th).toFixed(1)}%` : 'N/A'}</Typography>
                     <Typography variant="body2" color="textSecondary">12th Marks</Typography>
                   </Grid>
@@ -113,7 +113,7 @@ const StudentProfileModal = ({ open, onClose, studentId, userRole }) => {
             </Grid>
 
             {/* Semester SGPA */}
-            <Grid item xs={12}>
+            <Grid size={12}>
               <Paper variant="outlined" sx={{ p: 2, bgcolor: '#f9fafb' }}>
                 <Typography variant="subtitle2" color="textSecondary" gutterBottom>Semester-wise SGPA</Typography>
                 <Grid container spacing={1}>
@@ -122,7 +122,7 @@ const StudentProfileModal = ({ open, onClose, studentId, userRole }) => {
                     const currentSem = parseInt(profileData.semester) || 0;
                     const reached = sem <= currentSem;
                     return (
-                      <Grid item xs={3} sm={1.5} key={sem}>
+                      <Grid size={{ xs: 3, sm: 1.5 }} key={sem}>
                         <Box textAlign="center" p={1} borderRadius={1}
                           sx={{ bgcolor: reached && val != null ? '#e0f2fe' : '#f3f4f6', border: '1px solid', borderColor: reached && val != null ? '#7dd3fc' : '#e5e7eb' }}
                         >
@@ -139,7 +139,7 @@ const StudentProfileModal = ({ open, onClose, studentId, userRole }) => {
             </Grid>
 
             {/* Skills */}
-            <Grid item xs={12}>
+            <Grid size={12}>
               <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
                 <BusinessCenter sx={{ fontSize: 18, mr: 1, verticalAlign: 'text-bottom' }} />
                 Skills & Technologies
@@ -165,10 +165,10 @@ const StudentProfileModal = ({ open, onClose, studentId, userRole }) => {
               </Box>
             </Grid>
 
-            <Grid item xs={12}><Divider /></Grid>
+            <Grid size={12}><Divider /></Grid>
 
             {/* Activity Points */}
-            <Grid item xs={12}>
+            <Grid size={12}>
               <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
                 <CheckCircle sx={{ fontSize: 18, mr: 1, verticalAlign: 'text-bottom' }} />
                 Extracurricular Activity Points
@@ -177,7 +177,7 @@ const StudentProfileModal = ({ open, onClose, studentId, userRole }) => {
               {profileData.activityPoints && profileData.activityPoints.length > 0 ? (
                 <Grid container spacing={2}>
                   {profileData.activityPoints.map((ap, index) => (
-                    <Grid item xs={12} sm={6} key={index}>
+                    <Grid size={{ xs: 12, sm: 6 }} key={index}>
                       <Paper variant="outlined" sx={{ p: 1.5 }}>
                         <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
                           <Typography variant="body2" fontWeight="bold">{ap.activity_type}</Typography>
